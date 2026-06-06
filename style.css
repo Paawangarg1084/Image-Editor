@@ -1,0 +1,170 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: sans-serif;
+}
+
+section {
+  display: flex;
+  height: 100vh;
+}
+
+/* LEFT */
+.left {
+  width: 30%;
+  background: var(--bg-secondary);
+  padding: var(--space-lg);
+}
+
+/* FILTERS */
+#filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.filter {
+  background: var(--bg-card);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.filter-value {
+  color: var(--accent);
+}
+
+.filter input {
+  width: 100%;
+}
+
+/* SIGNATURE */
+.signature {
+  margin-top: 25px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  font-family: 'Orbitron', sans-serif;
+
+  text-shadow:
+    0 0 3px var(--accent),
+    0 0 6px rgba(255, 0, 0, 0.6);
+
+  opacity: 0.95;
+}
+
+/* RIGHT */
+.right {
+  width: 70%;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* BUTTONS */
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 8px 12px;
+  background: var(--accent);
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* IMAGE AREA */
+.bottom {
+  flex: 1;
+  border: 2px dashed gray;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.canvas-container {
+  position: relative;
+}
+
+img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+i {
+  font-size: 60px;
+  position: absolute;
+}
+
+.p {
+  position: absolute;
+  top: 60%;
+  color: gray;
+}
+
+/* CROP BOX */
+#crop-box {
+  position: absolute;
+  border: 2px dashed red;
+  display: none;
+  cursor: move;
+}
+
+.resize {
+  width: 10px;
+  height: 10px;
+  background: red;
+  position: absolute;
+}
+
+.handle-tl { top: -5px; left: -5px; cursor: nwse-resize; }
+.handle-tr { top: -5px; right: -5px; cursor: nesw-resize; }
+.handle-bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
+.handle-br { bottom: -5px; right: -5px; cursor: nwse-resize; }
+
+
+.canvas-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+#image {
+  max-width: 100%;
+  display: none;
+}
+
+#crop-box {
+  position: absolute;
+  border: 2px dashed #00f;
+  display: none;
+  cursor: move;
+}
+
+/* prevent blocking when hidden */
+#crop-box.hidden {
+  display: none;
+  pointer-events: none;
+}

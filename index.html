@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Editor</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.9.0/fonts/remixicon.css" rel="stylesheet"/>
+
+  <link rel="stylesheet" href="theme.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<section>
+
+  <!-- LEFT -->
+  <div class="left">
+    <h2>Filters</h2>
+    <div id="filters"></div>
+    <p class="signature">Project By Paawan Garg</p>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="top">
+      <label class="btn">
+        Choose File
+        <input type="file" id="img-input" accept="image/*" hidden>
+      </label>
+
+      <button id="remove-bg-btn" class="btn">Remove Background</button>
+
+      <button id="reset-image-btn" class="btn">Reset Image</button>
+      <button id="crop-btn" class="btn">Crop</button>
+      <button id="apply-crop-btn" class="btn">Apply Crop</button>
+      <button id="download-btn" class="btn">Download</button>
+
+      
+    </div>
+
+    <div class="bottom">
+      <div class="canvas-container">
+        <img id="image" />
+
+        <div id="crop-box">
+          <div class="resize handle-tl"></div>
+          <div class="resize handle-br"></div>
+        </div>
+      </div>
+
+      <i class="ri-image-fill"></i>
+      <p class="p">No Chosen Image</p>
+    </div>
+  </div>
+
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
