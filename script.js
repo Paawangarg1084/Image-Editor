@@ -263,16 +263,27 @@ resetImageBtn.onclick = () => {
   watermarkPlacementActive = false;
   if (applyWatermarkBtn) applyWatermarkBtn.innerText = "Add Text";
 };
-
-// ================= CROP INITIALIZATION =================
-cropBtn.onclick = () => {
+// ================= FIXED CROP INITIALIZATION (WITH TOGGLE CANCEL) =================
+cropBtn.onclick = (e) => {
   if (!currentImage) return;
+  if (e) e.preventDefault();
 
+  // TOGGLE ACTION: If the box is already open, clicking "Cancel Crop" will shut it safely
+  if (cropBox.style.display === "block") {
+    cropBox.style.display = "none";
+    cropBtn.innerHTML = "Crop"; // Revert text back to normal
+    return;
+  }
+
+  // Otherwise, initialize the selection box frames cleanly
   cropBox.style.display = "block";
   cropBox.style.width = "150px";
   cropBox.style.height = "150px";
   cropBox.style.left = "10px";
   cropBox.style.top = "10px";
+
+  // Shift text dynamically to inform the user they can back out safely
+  cropBtn.innerHTML = "Cancel Crop";
 };
 
 // ================= CROP BOX MOUSE DRAG & RESIZE MECHANICS =================
@@ -451,9 +462,15 @@ function generateProcessedCanvas(cropRect = null) {
   return canvas;
 }
 
-// ================= APPLY CROP =================
+// ================= FIXED SAFETY APPLY CROP =================
 applyCropBtn.onclick = () => {
   if (!currentImage) return;
+
+  // CRITICAL GUARD CLAUSE: If the crop box is hidden, stop the function immediately.
+  // This completely prevents the image from disappearing if you click the button accidentally!
+  if (cropBox.style.display === "none" || !cropBox.style.display) {
+    return; 
+  }
 
   const cropRect = cropBox.getBoundingClientRect();
   const canvas = generateProcessedCanvas(cropRect);
@@ -471,6 +488,7 @@ applyCropBtn.onclick = () => {
   };
 
   cropBox.style.display = "none";
+  cropBtn.innerHTML = "Crop"; // Resets the cancel toggle back to normal text
 };
 
 // ================= HIGH-QUALITY DOWNLOAD SYSTEM =================
