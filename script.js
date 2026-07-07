@@ -648,6 +648,11 @@ image.addEventListener("click", (e) => {
   };
 });
 
+
+// ================= INIT =================
+// Only runs the calculation loops if an active file asset context is ready
+applyFilters();
+
 // ============================================================================
 // ==================== ADVANCED FEATURE EXPANSION ADD-ON ====================
 // ============================================================================
@@ -722,6 +727,3 @@ if (noirBtn) noirBtn.onclick = (e) => { e.preventDefault(); applyAestheticPreset
 if (crimsonBtn) crimsonBtn.onclick = (e) => { e.preventDefault(); applyAestheticPreset({ brightness: 90, contrast: 120, saturation: 140, hueRotation: 0, blur: 0, grayscale: 10, opacity: 100, invert: 0, sharpness: 15 }); };
 
 
-// ================= INIT =================
-// Only runs the calculation loops if an active file asset context is ready
-applyFilters();
