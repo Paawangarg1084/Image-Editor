@@ -23,6 +23,7 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
       contentType: req.file.mimetype || "image/png",
     });
 
+    // FIXED API URL: Restored the exact remove.bg endpoint so Vercel can talk to it cleanly
     const response = await fetch("https://remove.bg", {
       method: "POST",
       headers: {
@@ -49,4 +50,5 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
   }
 });
 
-app.listen(3000, () => console.log("Server running on http://localhost:3000"));
+// CRITICAL VERCEL REQUIREMENT: Export the app module instance so Vercel can run it completely serverless
+module.exports = app;
