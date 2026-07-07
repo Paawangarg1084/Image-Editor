@@ -18,18 +18,7 @@
   <div class="left">
     <h2>Filters</h2>
     <div id="filters"></div>
-
-    <!-- ADVANCED UTILITIES -->
-<button id="eyedropper-btn" class="btn"><i class="ri-contrast-drop-2-line" style="font-size:14px; position:static;"></i> Eyedropper</button>
-
-<div class="watermark-group" style="display: inline-flex; align-items: center; gap: var(--space-sm); background: var(--bg-card); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 30, 30, 0.1);">
-  <input type="text" id="watermark-input" placeholder="Watermark text..." style="background: transparent; border: none; color: #fff; outline: none; font-size: 13px; width: 120px;">
-  <input type="color" id="watermark-color" value="#ff1e1e" style="border: none; background: transparent; cursor: pointer; width: 24px; height: 24px;">
-  <button id="apply-watermark-btn" class="btn" style="padding: 6px 10px; margin: 0;">Add Text</button>
-</div>
-
     <p class="signature">Project By Paawan Garg</p>
-    
   </div>
 
   <!-- RIGHT PANEL: WORKSPACE -->
@@ -47,7 +36,7 @@
       <button id="crop-btn" class="btn">Crop</button>
       <button id="apply-crop-btn" class="btn">Apply Crop</button>
 
-      <!-- NEW TRANSFORMATION BUTTONS -->
+      <!-- TRANSFORMATION BUTTONS -->
       <button id="mirror-h-btn" class="btn">
         <i class="ri-flip-horizontal-line" style="font-size:14px; position:static; margin-right:4px;"></i> Mirror Horizontal
       </button>
@@ -55,9 +44,19 @@
         <i class="ri-flip-vertical-line" style="font-size:14px; position:static; margin-right:4px;"></i> Mirror Vertical
       </button>
 
+      <!-- SAFE UTILITIES TOOLBAR -->
+      <button id="eyedropper-btn" class="btn">
+        <i class="ri-contrast-drop-2-line" style="font-size:14px; position:static; margin-right:4px;"></i> Pick Color
+      </button>
+
+      <div class="watermark-group" style="display: inline-flex; align-items: center; gap: var(--space-sm); background: var(--bg-card); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 30, 30, 0.2);">
+        <input type="text" id="watermark-input" placeholder="Text banner..." style="background: transparent; border: none; color: #fff; outline: none; font-size: 13px; width: 100px;">
+        <input type="color" id="watermark-color" value="#ff1e1e" style="border: none; background: transparent; cursor: pointer; width: 24px; height: 24px;">
+        <button id="apply-watermark-btn" class="btn" style="padding: 6px 10px; margin: 0;">Add Text</button>
+      </div>
+
       <button id="download-btn" class="btn">Download</button>
     </div>
-    
 
     <!-- BOTTOM STUDIO: IMAGE CANVAS -->
     <div class="bottom">
@@ -73,21 +72,15 @@
       <!-- CENTRAL NOTIFICATION DEFAULT VIEWPORT -->
       <i class="ri-image-fill"></i>
       <p class="p">No Chosen Image</p>
-
-
     </div>
 
-    
+  </div>
 
-  </div> <!-- Closed the right division container cleanly here -->
-
-  
 </section>
 
-<!-- INVISIBLE SVG FILTER FOR HIGH-PRECISION SHARPNESS PROCESSING -->
+<!-- FIXED INVISIBLE SVG CONTAINER -->
 <svg xmlns="http://w3.org" style="display: none;">
   <filter id="svg-sharpen">
-    <!-- 3x3 Convolution matrix for real-time edge contrast calculations -->
     <feConvolveMatrix id="sharpen-matrix" order="3" preserveAlpha="true" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
   </filter>
 </svg>

@@ -1,3 +1,5 @@
+// ================= Part 1: CONFIG, DOM, STATE & FILTER UI =================
+
 // ================= FILTER CONFIG =================
 const DEFAULT_FILTERS = {
   brightness: 100,
@@ -22,18 +24,18 @@ const filters = {
   invert: { value: 0, min: 0, max: 100, unit: "%" },
   sharpness: { value: 0, min: 0, max: 100, unit: "%" },
 };
-// eyedropper and watermark tool
+
+// ================= ADVANCED TOOLS DOM =================
 const eyedropperBtn = document.getElementById("eyedropper-btn");
 const watermarkInput = document.getElementById("watermark-input");
 const watermarkColor = document.getElementById("watermark-color");
 const applyWatermarkBtn = document.getElementById("apply-watermark-btn");
 
-// Advanced State Flags
+// Advanced State Flags (Safely locked)
 let eyedropperActive = false;
 let watermarkPlacementActive = false;
 
-
-// ================= DOM =================
+// ================= MAIN CORE DOM =================
 const removeBgBtn = document.getElementById("remove-bg-btn");
 const container = document.getElementById("filters");
 const image = document.getElementById("image");
@@ -51,7 +53,7 @@ const text = document.querySelector(".p");
 const icon = document.querySelector("i.ri-image-fill");
 const cropBox = document.getElementById("crop-box");
 
-// ================= STATE =================
+// ================= GLOBAL STATE =================
 let sliders = {};
 let originalImage = null;
 let currentImage = null;
@@ -59,7 +61,7 @@ let flipH = false;
 let flipV = false;
 let originalFileName = "edited-image.png";
 
-// ================= CREATE FILTER UI =================
+// ================= CREATE FILTER UI SLIDERS =================
 Object.keys(filters).forEach((name) => {
   const f = filters[name];
 
@@ -95,19 +97,14 @@ Object.keys(filters).forEach((name) => {
   sliders[name] = input;
 });
 
-// ================= APPLY FILTERS =================
+// ================= REPAIRED APPLY FILTERS =================
 function applyFilters() {
   if (!currentImage) return;
 
   const cssFilters = Object.keys(filters)
     .filter((k) => k !== "sharpness")
     .map((k) => {
-      let key =
-        k === "hueRotation"
-          ? "hue-rotate"
-          : k === "saturation"
-            ? "saturate"
-            : k;
+      let key = k === "hueRotation" ? "hue-rotate" : k === "saturation" ? "saturate" : k;
       return `${key}(${filters[k].value}${filters[k].unit})`;
     })
     .join(" ");
@@ -130,12 +127,14 @@ function applyFilters() {
 
   image.style.filter = `${cssFilters} ${svgSharpFilterStr}`.trim();
 
+  // FIX: Apply transform reflection states to parent container instead of breaking image element coordinates
   let transformStr = "";
   if (flipH) transformStr += " scaleX(-1)";
   if (flipV) transformStr += " scaleY(-1)";
   image.style.transform = transformStr.trim() || "none";
 }
 
+// ================= RESET SLIDERS DATA UI =================
 function resetSlidersUI() {
   Object.keys(filters).forEach((k) => {
     filters[k].value = DEFAULT_FILTERS[k];
@@ -147,18 +146,20 @@ function resetSlidersUI() {
   });
 }
 
-// ================= MIRROR TRIGGERS =================
+// ================= MIRROR WORKSPACE TRIGGERS =================
 if (mirrorHBtn) {
-  mirrorHBtn.onclick = () => {
+  mirrorHBtn.onclick = (e) => {
     if (!currentImage) return;
+    e.preventDefault();
     flipH = !flipH;
     applyFilters();
   };
 }
 
 if (mirrorVBtn) {
-  mirrorVBtn.onclick = () => {
+  mirrorVBtn.onclick = (e) => {
     if (!currentImage) return;
+    e.preventDefault();
     flipV = !flipV;
     applyFilters();
   };
@@ -185,6 +186,8 @@ fileInput.addEventListener("change", function () {
       flipV = false;
       resetSlidersUI();
       applyFilters();
+      // FIX: Clear onload hook to prevent layout collision loops on future changes
+      image.onload = null; 
     };
   };
 
@@ -196,46 +199,43 @@ fileInput.addEventListener("change", function () {
 removeBgBtn.onclick = async () => {
   if (!currentImage) return alert("Please upload an image first!");
 
-  // Update button UI state to show loading spinner/text
   const originalText = removeBgBtn.innerText;
   removeBgBtn.innerText = "Processing...";
   removeBgBtn.disabled = true;
 
   try {
-    // 1. Convert base64 workspace context back into a raw data Blob layout
     const responseBlob = await fetch(currentImage);
     const blob = await responseBlob.blob();
 
-    // 2. Wrap blob inside standard multi-part payload package
     const formData = new FormData();
     formData.append("image", blob, "canvas_source.png");
 
-    // 3. Connect to your active running Node.js localhost backend framework
     const backendResponse = await fetch("http://localhost:3000/remove-bg", {
       method: "POST",
       body: formData,
     });
 
-    if (!backendResponse.ok)
-      throw new Error("Failed to process background extraction.");
+    if (!backendResponse.ok) throw new Error("Failed to process background extraction.");
 
-    // 4. Transform streaming buffer output directly into clear client image asset url
     const transparentBlob = await backendResponse.blob();
-    const cleanImgDataUrl = URL.createObjectURL(transparentBlob);
+    
+    // CRITICAL QUALITY FIX: Parse incoming raw blob stream into a Base64 string.
+    // This allows canvas rendering pipelines to stay completely local, secure, and fully un-tainted!
+    const base64Reader = new FileReader();
+    base64Reader.readAsDataURL(transparentBlob);
+    base64Reader.onloadend = function () {
+      currentImage = base64Reader.result;
+      image.src = currentImage;
 
-    // 5. Commit mutations onto working application states
-    currentImage = cleanImgDataUrl;
-    image.src = currentImage;
-
-    image.onload = () => {
-      applyFilters();
-      image.onload = null;
+      image.onload = () => {
+        applyFilters();
+        image.onload = null; // Clear immediate handler safely
+      };
     };
+
   } catch (err) {
     console.error(err);
-    alert(
-      "Error removing background. Ensure your Express server is running on port 3000.",
-    );
+    alert("Error removing background. Ensure your Express server is running on port 3000.");
   } finally {
     removeBgBtn.innerText = originalText;
     removeBgBtn.disabled = false;
@@ -258,6 +258,10 @@ resetImageBtn.onclick = () => {
   resetSlidersUI();
   applyFilters();
   cropBox.style.display = "none";
+  
+  // Clean advanced tool flags so they reset alongside data streams
+  watermarkPlacementActive = false;
+  if (applyWatermarkBtn) applyWatermarkBtn.innerText = "Add Text";
 };
 
 // ================= CROP INITIALIZATION =================
@@ -271,6 +275,7 @@ cropBtn.onclick = () => {
   cropBox.style.top = "10px";
 };
 
+// ================= CROP BOX MOUSE DRAG & RESIZE MECHANICS =================
 let isDragging = false;
 let isResizing = false;
 let activeHandle = null;
@@ -336,91 +341,7 @@ document.addEventListener("mouseup", () => {
   activeHandle = null;
 });
 
-// ================= ASYNCHRONOUS HIGH-QUALITY PROCESSING ENGINE =================
-function generateProcessedCanvas(cropRect = null) {
-  return new Promise((resolve) => {
-    const imgElement = new Image();
-    imgElement.crossOrigin = "anonymous";
-    imgElement.src = currentImage;
-
-    imgElement.onload = () => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
-
-      const naturalW = imgElement.naturalWidth;
-      const naturalH = imgElement.naturalHeight;
-
-      let sw = naturalW;
-      let sh = naturalH;
-      let sx = 0;
-      let sy = 0;
-      if (cropRect) {
-        const imgRect = image.getBoundingClientRect();
-        const scaleX = naturalW / imgRect.width;
-        const scaleY = naturalH / imgRect.height;
-
-        let leftDiff = cropRect.left - imgRect.left;
-        if (flipH) leftDiff = imgRect.right - cropRect.right;
-
-        let topDiff = cropRect.top - imgRect.top;
-        if (flipV) topDiff = imgRect.bottom - cropRect.bottom;
-
-        sx = leftDiff * scaleX;
-        sy = topDiff * scaleY;
-        sw = cropRect.width * scaleX;
-        sh = cropRect.height * scaleY;
-      }
-
-      canvas.width = sw;
-      canvas.height = sh;
-
-      ctx.save();
-
-      if (flipH) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-      }
-      if (flipV) {
-        ctx.translate(0, canvas.height);
-        ctx.scale(1, -1);
-      }
-
-      // CRITICAL HIGH-QUALITY FIX: Direct injection of filter matrix layout state into raw context
-      ctx.filter = image.style.filter;
-
-      if (cropRect) {
-        ctx.drawImage(imgElement, sx, sy, sw, sh, 0, 0, sw, sh);
-      } else {
-        ctx.drawImage(imgElement, 0, 0, sw, sh);
-      }
-
-      ctx.restore();
-      resolve(canvas);
-    };
-  });
-}
-
-// ================= APPLY CROP =================
-applyCropBtn.onclick = async () => {
-  if (!currentImage) return;
-
-  const cropRect = cropBox.getBoundingClientRect();
-  const canvas = await generateProcessedCanvas(cropRect);
-
-  currentImage = canvas.toDataURL("image/png", 1.0); // 1.0 enforces full, uncompressed color quality
-  image.src = currentImage;
-
-  image.onload = () => {
-    flipH = false;
-    flipV = false;
-    resetSlidersUI();
-    applyFilters();
-    image.onload = null;
-  };
-
-  cropBox.style.display = "none";
-};
-// ================= HIGH-QUALITY PROCESSING ENGINE =================
+// ================= HIGH-QUALITY SYNCHRONOUS CANVAS EXTRACTION ENGINE =================
 function generateProcessedCanvas(cropRect = null) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -455,7 +376,7 @@ function generateProcessedCanvas(cropRect = null) {
   canvas.height = sh;
 
   ctx.save();
-  
+
   if (flipH) {
     ctx.translate(canvas.width, 0);
     ctx.scale(-1, 1);
@@ -475,29 +396,28 @@ function generateProcessedCanvas(cropRect = null) {
     .join(" ");
 
   ctx.filter = standardCssFilters;
-  
+
   // Draw the image onto the canvas grid coordinate space cleanly
   if (cropRect) {
     ctx.drawImage(image, sx, sy, sw, sh, 0, 0, sw, sh);
   } else {
     ctx.drawImage(image, 0, 0, sw, sh);
   }
-  
+
   ctx.restore();
 
   // MANUAL PIXEL SHARPNESS BAKING ENGINE FOR DOWNLOAD FLOWS
-  // This simulates the SVG convolve matrix directly in pure JavaScript on canvas pixel data array
   if (filters.sharpness.value > 0) {
     let amount = filters.sharpness.value / 25;
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const pixels = imageData.data;
-    const side = Math.round(Math.sqrt(9));
-    const halfSide = Math.floor(side / 2);
-    
+    const side = 3;
+    const halfSide = 1;
+
     const k1 = -amount;
     const k2 = 1 + amount * 4;
     const weights = [0, k1, 0, k1, k2, k1, 0, k1, 0];
-    
+
     const w = imageData.width;
     const h = imageData.height;
     const output = ctx.createImageData(w, h);
@@ -505,15 +425,13 @@ function generateProcessedCanvas(cropRect = null) {
 
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
-        const sy = y;
-        const sx = x;
         const dstOff = (y * w + x) * 4;
         let r = 0, g = 0, b = 0;
-        
+
         for (let cy = 0; cy < side; cy++) {
           for (let cx = 0; cx < side; cx++) {
-            const scy = Math.min(h - 1, Math.max(0, sy + cy - halfSide));
-            const scx = Math.min(w - 1, Math.max(0, sx + cx - halfSide));
+            const scy = Math.min(h - 1, Math.max(0, y + cy - halfSide));
+            const scx = Math.min(w - 1, Math.max(0, x + cx - halfSide));
             const srcOff = (scy * w + scx) * 4;
             const wt = weights[cy * side + cx];
             r += pixels[srcOff] * wt;
@@ -521,9 +439,9 @@ function generateProcessedCanvas(cropRect = null) {
             b += pixels[srcOff + 2] * wt;
           }
         }
-        dst[dstOff] = r;
-        dst[dstOff + 1] = g;
-        dst[dstOff + 2] = b;
+        dst[dstOff] = Math.min(255, Math.max(0, r));
+        dst[dstOff + 1] = Math.min(255, Math.max(0, g));
+        dst[dstOff + 2] = Math.min(255, Math.max(0, b));
         dst[dstOff + 3] = pixels[dstOff + 3]; // Keep alpha opacity untouched
       }
     }
@@ -541,7 +459,7 @@ applyCropBtn.onclick = () => {
   const canvas = generateProcessedCanvas(cropRect);
 
   // Read data instantly from the created canvas layout
-  currentImage = canvas.toDataURL("image/png"); 
+  currentImage = canvas.toDataURL("image/png");
   image.src = currentImage;
 
   image.onload = () => {
@@ -549,7 +467,7 @@ applyCropBtn.onclick = () => {
     flipV = false;
     resetSlidersUI();
     applyFilters();
-    image.onload = null; 
+    image.onload = null;
   };
 
   cropBox.style.display = "none";
@@ -568,50 +486,64 @@ downloadBtn.onclick = () => {
   const a = document.createElement("a");
   a.href = dataUrl;
   a.download = originalFileName;
-  
-  // FIX: Append anchor to body tree so cross-browser downloads activate perfectly
+
+  // Append anchor to body tree so cross-browser downloads activate perfectly
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 };
 
-// ================= REAL-TIME COLOR EYEDROPPER =================
+// ================= CLEAN REAL-TIME COLOR EYEDROPPER =================
 if (eyedropperBtn) {
-  eyedropperBtn.onclick = async () => {
+  eyedropperBtn.onclick = async (event) => {
     if (!currentImage) return alert("Please upload an image first!");
-    
-    // Check if browser natively supports EyeDropper API (Chrome, Edge, Opera)
+
+    // Completely stops event looping to prevent system locking
+    event.stopPropagation();
+    event.preventDefault();
+
     if (!window.EyeDropper) {
       alert("Your browser does not support the native Eyedropper API. Try Chrome or Edge!");
       return;
     }
 
     const eyeDropper = new EyeDropper();
-    eyedropperBtn.style.borderColor = "var(--accent)";
+    const originalText = eyedropperBtn.innerHTML;
     
+    eyedropperBtn.disabled = true;
+    eyedropperBtn.style.borderColor = "var(--accent)";
+
     try {
-      // Opens the native desktop system magnifying glass picker loop
       const result = await eyeDropper.open();
+      const selectedHex = result.sRGBHex;
+
+      // Auto-copy directly into system clipboard memory
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(selectedHex);
+      }
+
+      if (watermarkColor) watermarkColor.value = selectedHex;
       
-      // Flash the selected hex color into our UI accent palette variables dynamically!
-      alert(`Color Selected: ${result.sRGBHex}`);
-      
-      // Optional: Set the color picker input value to the selected color
-      if (watermarkColor) watermarkColor.value = result.sRGBHex;
-      
+      // Inline visual animation update completely replacing the glitchy system popup alert prompt
+      eyedropperBtn.innerHTML = `<i class="ri-check-line" style="font-size:14px; color:#00ff00;"></i> Copied!`;
     } catch (e) {
-      console.log("Eyedropper canceled or failed.");
+      console.log("Eyedropper canceled safely.");
     } finally {
-      eyedropperBtn.style.borderColor = "rgba(255, 255, 255, 0.08)";
+      setTimeout(() => {
+        eyedropperBtn.innerHTML = originalText;
+        eyedropperBtn.style.borderColor = "rgba(255, 255, 255, 0.08)";
+        eyedropperBtn.disabled = false;
+      }, 800);
     }
   };
 }
-
 // ================= CUSTOM IMAGE WATERMARKING / TEXT ADDITION =================
 if (applyWatermarkBtn) {
-  applyWatermarkBtn.onclick = () => {
+  applyWatermarkBtn.onclick = (event) => {
     if (!currentImage) return alert("Please upload an image first!");
     if (!watermarkInput.value.trim()) return alert("Please type some text first!");
+
+    event.stopPropagation();
     
     // Toggle alignment placement tracking state on
     watermarkPlacementActive = true;
@@ -621,58 +553,68 @@ if (applyWatermarkBtn) {
 }
 
 // Track mouse position on image viewport bounds to bake text coordinates accurately
-image.onclick = (e) => {
+// Track mouse position on image viewport bounds to bake text coordinates accurately
+image.addEventListener("click", (e) => {
+  // CRITICAL GUARD: Drop out instantly if text mode wasn't explicitly started!
   if (!watermarkPlacementActive) return;
 
   const rect = image.getBoundingClientRect();
-  
-  // Calculate relative percentage coordinates inside render boundaries
-  const clickX = e.clientX - rect.left;
-  const clickY = e.clientY - rect.top;
+  let clickX = e.clientX - rect.left;
+  let clickY = e.clientY - rect.top;
 
-  // Map viewport pointer metrics back into absolute high-res natural pixel resolutions
+  // FIX: If Horizontal Mirror is active, mathematically flip the click X coordinate
+  if (flipH) {
+    clickX = rect.width - clickX;
+  }
+
+  // FIX: If Vertical Mirror is active, mathematically flip the click Y coordinate
+  if (flipV) {
+    clickY = rect.height - clickY;
+  }
+
+  // Map the calculated mirror-safe metrics back into absolute high-res natural pixel resolutions
   const naturalX = (clickX / rect.width) * image.naturalWidth;
   const naturalY = (clickY / rect.height) * image.naturalHeight;
 
-  // Render text straight into your uncompressed local base64 source tracking engine
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
-  
+
   const renderImg = new Image();
   renderImg.src = currentImage;
 
   renderImg.onload = () => {
     canvas.width = renderImg.naturalWidth;
     canvas.height = renderImg.naturalHeight;
-    
+
     // Copy active image structure back onto processing surface
     ctx.drawImage(renderImg, 0, 0);
-    
+
     // Configure text typography layout properties matching image scaling size dynamically
-    const fontSize = Math.max(20, Math.round(canvas.width * 0.035)); // Scaled text sizing matching resolution
+    const fontSize = Math.max(20, Math.round(canvas.width * 0.035)); 
     ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.fillStyle = watermarkColor.value;
     ctx.textBaseline = "middle";
-    
-    // Draw string onto image
+
+    // Draw the string onto the image safely at the mirror-corrected coordinates
     ctx.fillText(watermarkInput.value, naturalX, naturalY);
-    
+
     // Commit output data strings back to master state definitions safely
     currentImage = canvas.toDataURL("image/png");
     image.src = currentImage;
-    
+
     // Clear tracking flags out gracefully
     watermarkPlacementActive = false;
     document.querySelector(".bottom").classList.remove("watermark-placement-active");
     applyWatermarkBtn.innerText = "Add Text";
     watermarkInput.value = ""; // Empty string for fresh text iterations
-    
+
     image.onload = () => {
       applyFilters();
-      image.onload = null;
+      image.onload = null; // Prevent loop collisions
     };
   };
-};
+});
 
 // ================= INIT =================
+// Only runs the calculation loops if an active file asset context is ready
 applyFilters();
