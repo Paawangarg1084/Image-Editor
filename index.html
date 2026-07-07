@@ -14,10 +14,22 @@
 <body>
 <section>
 
-  <!-- LEFT PANEL: FILTERS -->
+  <!-- LEFT PANEL: FILTERS SIDEBAR -->
   <div class="left">
     <h2>Filters</h2>
     <div id="filters"></div>
+
+    <!-- PRESET AESTHETICS PANEL -->
+    <div class="presets-panel" style="margin-top: var(--space-lg); padding-top: var(--space-md); border-top: 1px solid rgba(255, 30, 30, 0.15);">
+      <h3 style="font-size: 14px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: var(--space-sm); font-family: 'Orbitron', sans-serif; letter-spacing: 0.5px;">Aesthetic Presets</h3>
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-sm);">
+        <button id="preset-cyberpunk" class="btn" style="padding: 6px; font-size: 11px; justify-content: center;">Cyberpunk</button>
+        <button id="preset-vintage" class="btn" style="padding: 6px; font-size: 11px; justify-content: center;">Vintage</button>
+        <button id="preset-noir" class="btn" style="padding: 6px; font-size: 11px; justify-content: center;">Noir</button>
+        <button id="preset-crimson" class="btn" style="padding: 6px; font-size: 11px; justify-content: center;">Crimson</button>
+      </div>
+    </div>
+
     <p class="signature">Project By Paawan Garg</p>
   </div>
 
@@ -42,6 +54,11 @@
       </button>
       <button id="mirror-v-btn" class="btn">
         <i class="ri-flip-vertical-line" style="font-size:14px; position:static; margin-right:4px;"></i> Mirror Vertical
+      </button>
+      
+      <!-- ROTATE BUTTON -->
+      <button id="rotate-btn" class="btn">
+        <i class="ri-clockwise-line" style="font-size:14px; position:static; margin-right:4px;"></i> Rotate 90°
       </button>
 
       <!-- SAFE UTILITIES TOOLBAR -->
@@ -78,7 +95,7 @@
 
 </section>
 
-<!-- FIXED INVISIBLE SVG CONTAINER -->
+<!-- INVISIBLE SVG FILTER FOR HIGH-PRECISION SHARPNESS PROCESSING -->
 <svg xmlns="http://w3.org" style="display: none;">
   <filter id="svg-sharpen">
     <feConvolveMatrix id="sharpen-matrix" order="3" preserveAlpha="true" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
