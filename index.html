@@ -18,7 +18,18 @@
   <div class="left">
     <h2>Filters</h2>
     <div id="filters"></div>
+
+    <!-- ADVANCED UTILITIES -->
+<button id="eyedropper-btn" class="btn"><i class="ri-contrast-drop-2-line" style="font-size:14px; position:static;"></i> Eyedropper</button>
+
+<div class="watermark-group" style="display: inline-flex; align-items: center; gap: var(--space-sm); background: var(--bg-card); padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 30, 30, 0.1);">
+  <input type="text" id="watermark-input" placeholder="Watermark text..." style="background: transparent; border: none; color: #fff; outline: none; font-size: 13px; width: 120px;">
+  <input type="color" id="watermark-color" value="#ff1e1e" style="border: none; background: transparent; cursor: pointer; width: 24px; height: 24px;">
+  <button id="apply-watermark-btn" class="btn" style="padding: 6px 10px; margin: 0;">Add Text</button>
+</div>
+
     <p class="signature">Project By Paawan Garg</p>
+    
   </div>
 
   <!-- RIGHT PANEL: WORKSPACE -->
@@ -46,6 +57,7 @@
 
       <button id="download-btn" class="btn">Download</button>
     </div>
+    
 
     <!-- BOTTOM STUDIO: IMAGE CANVAS -->
     <div class="bottom">
@@ -61,10 +73,15 @@
       <!-- CENTRAL NOTIFICATION DEFAULT VIEWPORT -->
       <i class="ri-image-fill"></i>
       <p class="p">No Chosen Image</p>
+
+
     </div>
+
+    
 
   </div> <!-- Closed the right division container cleanly here -->
 
+  
 </section>
 
 <!-- INVISIBLE SVG FILTER FOR HIGH-PRECISION SHARPNESS PROCESSING -->

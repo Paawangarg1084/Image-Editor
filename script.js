@@ -22,6 +22,16 @@ const filters = {
   invert: { value: 0, min: 0, max: 100, unit: "%" },
   sharpness: { value: 0, min: 0, max: 100, unit: "%" },
 };
+// eyedropper and watermark tool
+const eyedropperBtn = document.getElementById("eyedropper-btn");
+const watermarkInput = document.getElementById("watermark-input");
+const watermarkColor = document.getElementById("watermark-color");
+const applyWatermarkBtn = document.getElementById("apply-watermark-btn");
+
+// Advanced State Flags
+let eyedropperActive = false;
+let watermarkPlacementActive = false;
+
 
 // ================= DOM =================
 const removeBgBtn = document.getElementById("remove-bg-btn");
@@ -563,6 +573,105 @@ downloadBtn.onclick = () => {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+};
+
+// ================= REAL-TIME COLOR EYEDROPPER =================
+if (eyedropperBtn) {
+  eyedropperBtn.onclick = async () => {
+    if (!currentImage) return alert("Please upload an image first!");
+    
+    // Check if browser natively supports EyeDropper API (Chrome, Edge, Opera)
+    if (!window.EyeDropper) {
+      alert("Your browser does not support the native Eyedropper API. Try Chrome or Edge!");
+      return;
+    }
+
+    const eyeDropper = new EyeDropper();
+    eyedropperBtn.style.borderColor = "var(--accent)";
+    
+    try {
+      // Opens the native desktop system magnifying glass picker loop
+      const result = await eyeDropper.open();
+      
+      // Flash the selected hex color into our UI accent palette variables dynamically!
+      alert(`Color Selected: ${result.sRGBHex}`);
+      
+      // Optional: Set the color picker input value to the selected color
+      if (watermarkColor) watermarkColor.value = result.sRGBHex;
+      
+    } catch (e) {
+      console.log("Eyedropper canceled or failed.");
+    } finally {
+      eyedropperBtn.style.borderColor = "rgba(255, 255, 255, 0.08)";
+    }
+  };
+}
+
+// ================= CUSTOM IMAGE WATERMARKING / TEXT ADDITION =================
+if (applyWatermarkBtn) {
+  applyWatermarkBtn.onclick = () => {
+    if (!currentImage) return alert("Please upload an image first!");
+    if (!watermarkInput.value.trim()) return alert("Please type some text first!");
+    
+    // Toggle alignment placement tracking state on
+    watermarkPlacementActive = true;
+    document.querySelector(".bottom").classList.add("watermark-placement-active");
+    applyWatermarkBtn.innerText = "Click on Image...";
+  };
+}
+
+// Track mouse position on image viewport bounds to bake text coordinates accurately
+image.onclick = (e) => {
+  if (!watermarkPlacementActive) return;
+
+  const rect = image.getBoundingClientRect();
+  
+  // Calculate relative percentage coordinates inside render boundaries
+  const clickX = e.clientX - rect.left;
+  const clickY = e.clientY - rect.top;
+
+  // Map viewport pointer metrics back into absolute high-res natural pixel resolutions
+  const naturalX = (clickX / rect.width) * image.naturalWidth;
+  const naturalY = (clickY / rect.height) * image.naturalHeight;
+
+  // Render text straight into your uncompressed local base64 source tracking engine
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  
+  const renderImg = new Image();
+  renderImg.src = currentImage;
+
+  renderImg.onload = () => {
+    canvas.width = renderImg.naturalWidth;
+    canvas.height = renderImg.naturalHeight;
+    
+    // Copy active image structure back onto processing surface
+    ctx.drawImage(renderImg, 0, 0);
+    
+    // Configure text typography layout properties matching image scaling size dynamically
+    const fontSize = Math.max(20, Math.round(canvas.width * 0.035)); // Scaled text sizing matching resolution
+    ctx.font = `bold ${fontSize}px sans-serif`;
+    ctx.fillStyle = watermarkColor.value;
+    ctx.textBaseline = "middle";
+    
+    // Draw string onto image
+    ctx.fillText(watermarkInput.value, naturalX, naturalY);
+    
+    // Commit output data strings back to master state definitions safely
+    currentImage = canvas.toDataURL("image/png");
+    image.src = currentImage;
+    
+    // Clear tracking flags out gracefully
+    watermarkPlacementActive = false;
+    document.querySelector(".bottom").classList.remove("watermark-placement-active");
+    applyWatermarkBtn.innerText = "Add Text";
+    watermarkInput.value = ""; // Empty string for fresh text iterations
+    
+    image.onload = () => {
+      applyFilters();
+      image.onload = null;
+    };
+  };
 };
 
 // ================= INIT =================
