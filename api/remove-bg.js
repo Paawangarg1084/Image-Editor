@@ -1,6 +1,5 @@
 const express = require("express");
 const multer = require("multer");
-const fetch = require("node-fetch");
 const cors = require("cors");
 const FormData = require("form-data");
 require("dotenv").config();
@@ -23,7 +22,7 @@ app.post("/", upload.single("image"), async (req, res) => {
       contentType: req.file.mimetype || "image/png",
     });
 
-    // Address and Security token combined into one single request pipeline
+    // Uses native built-in global fetch engine to avoid version crashes
     const response = await fetch("https://remove.bg", {
       method: "POST",
       headers: {
@@ -39,14 +38,16 @@ app.post("/", upload.single("image"), async (req, res) => {
       return res.status(response.status).send(`API Error: ${response.statusText}`);
     }
 
-    const data = await response.buffer();
+    // Modern serverless array buffer extraction structure 
+    const arrayBuffer = await response.arrayBuffer();
+    const data = Buffer.from(arrayBuffer);
 
     res.set("Content-Type", "image/png");
     res.send(data);
 
   } catch (err) {
-    console.error("Internal Server Error Loop:", err);
-    res.status(500).send("Server Error");
+    console.error("Serverless Crash Log:", err.message);
+    res.status(500).send("Server Error: " + err.message);
   }
 });
 
