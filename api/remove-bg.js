@@ -10,7 +10,7 @@ const upload = multer();
 
 app.use(cors());
 
-app.post("/remove-bg", upload.single("image"), async (req, res) => {
+app.post("/", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).send("No image file provided.");
@@ -23,7 +23,7 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
       contentType: req.file.mimetype || "image/png",
     });
 
-    // FIXED API URL: Restored the exact remove.bg endpoint so Vercel can talk to it cleanly
+    // Address and Security token combined into one single request pipeline
     const response = await fetch("https://remove.bg", {
       method: "POST",
       headers: {
@@ -50,5 +50,4 @@ app.post("/remove-bg", upload.single("image"), async (req, res) => {
   }
 });
 
-// CRITICAL VERCEL REQUIREMENT: Export the app module instance so Vercel can run it completely serverless
 module.exports = app;
