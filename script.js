@@ -196,6 +196,7 @@ fileInput.addEventListener("change", function () {
 });
 
 // ================= BACKEND LINK: REMOVE BACKGROUND =================
+// ================= REMOVE BACKGROUND CONNECTOR =================
 removeBgBtn.onclick = async () => {
   if (!currentImage) return alert("Please upload an image first!");
 
@@ -210,39 +211,41 @@ removeBgBtn.onclick = async () => {
     const formData = new FormData();
     formData.append("image", blob, "canvas_source.png");
 
+    // FIX 1: Ensure this points to Vercel's Serverless API path, NOT localhost!
     const backendResponse = await fetch("/api/remove-bg", {
-  method: "POST",
-  body: formData,
-});
+      method: "POST",
+      body: formData,
+    });
 
-    if (!backendResponse.ok) throw new Error("Failed to process background extraction.");
+    if (!backendResponse.ok) {
+      const errorText = await backendResponse.text();
+      throw new Error(errorText || "Backend API failure.");
+    }
 
     const transparentBlob = await backendResponse.blob();
     
-    // CRITICAL QUALITY FIX: Parse incoming raw blob stream into a Base64 string.
-    // This allows canvas rendering pipelines to stay completely local, secure, and fully un-tainted!
     const base64Reader = new FileReader();
     base64Reader.readAsDataURL(transparentBlob);
     base64Reader.onloadend = function () {
       currentImage = base64Reader.result;
       image.src = currentImage;
-
       image.onload = () => {
         applyFilters();
-        image.onload = null; // Clear immediate handler safely
+        image.onload = null;
       };
     };
 
   } catch (err) {
     console.error(err);
-    alert("Error removing background. Ensure your Express server is running on port 3000.");
+    // FIX 2: Removed the hardcoded port 3000 text so we can read what Vercel is actually saying!
+    alert("Background Removal Failed: " + err.message);
   } finally {
     removeBgBtn.innerText = originalText;
     removeBgBtn.disabled = false;
   }
 };
 
-// ================= FIXED RESET IMAGE =================
+
 // ================= FIXED RESET IMAGE (WITH ACCIDENTAL CLICK CONFIRMATION) =================
 resetImageBtn.onclick = (event) => {
   if (!originalImage) return;
