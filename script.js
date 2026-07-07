@@ -210,10 +210,10 @@ removeBgBtn.onclick = async () => {
     const formData = new FormData();
     formData.append("image", blob, "canvas_source.png");
 
-    const backendResponse = await fetch("http://localhost:3000/remove-bg", {
-      method: "POST",
-      body: formData,
-    });
+    const backendResponse = await fetch("/api/remove-bg", {
+  method: "POST",
+  body: formData,
+});
 
     if (!backendResponse.ok) throw new Error("Failed to process background extraction.");
 
