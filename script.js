@@ -243,9 +243,20 @@ removeBgBtn.onclick = async () => {
 };
 
 // ================= FIXED RESET IMAGE =================
-resetImageBtn.onclick = () => {
+// ================= FIXED RESET IMAGE (WITH ACCIDENTAL CLICK CONFIRMATION) =================
+resetImageBtn.onclick = (event) => {
   if (!originalImage) return;
+  if (event) event.preventDefault();
 
+  // SAFETY GUARD: Ask user for confirmation before wiping out their active adjustments
+  const confirmReset = confirm("Are you sure you want to reset all edits? This will erase your text watermarks, crops, and filter settings.");
+  
+  // If the user clicks "Cancel", stop the function instantly and keep all edits safe!
+  if (!confirmReset) {
+    return; 
+  }
+
+  // If the user clicks "OK", proceed with the clean baseline reset
   currentImage = originalImage;
   image.src = currentImage;
 
@@ -257,12 +268,16 @@ resetImageBtn.onclick = () => {
   flipV = false;
   resetSlidersUI();
   applyFilters();
-  cropBox.style.display = "none";
   
-  // Clean advanced tool flags so they reset alongside data streams
+  // Clean up any remaining crop rig overlays or toggles
+  cropBox.style.display = "none";
+  cropBtn.innerHTML = "Crop"; 
+  
+  // Clear out text placement tracking variables
   watermarkPlacementActive = false;
   if (applyWatermarkBtn) applyWatermarkBtn.innerText = "Add Text";
 };
+
 // ================= FIXED CROP INITIALIZATION (WITH TOGGLE CANCEL) =================
 cropBtn.onclick = (e) => {
   if (!currentImage) return;
