@@ -1,54 +1,84 @@
-const express = require("express");
-const multer = require("multer");
-const cors = require("cors");
-const FormData = require("form-data");
-require("dotenv").config();
+import FormData from 'form-data';
 
-const app = express();
-const upload = multer();
+export default async function handler(req, res) {
+  // Fixes browser cross-domain security blocks natively
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-app.use(cors());
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-app.post("/", upload.single("image"), async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
+  }
+
   try {
-    if (!req.file) {
-      return res.status(400).send("No image file provided.");
+    // 1. Capture the raw binary chunk buffers directly from your web tab request
+    const buffers = [];
+    for await (const chunk of req) {
+      buffers.push(chunk);
+    }
+    const rawBody = Buffer.concat(buffers);
+
+    // 2. Parse out the multi-part boundary string to isolate the image file stream
+    const contentType = req.headers['content-type'] || req.headers['Content-Type'];
+    const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
+    if (!boundaryMatch) {
+      return res.status(400).send('Invalid multipart request.');
+    }
+    const boundary = boundaryMatch[1] || boundaryMatch[2];
+
+    // Find and isolate raw file data within the multipart boundaries
+    const boundaryBuffer = Buffer.from(`--${boundary}`);
+    const startIdx = rawBody.indexOf(boundaryBuffer);
+    const endIdx = rawBody.indexOf(boundaryBuffer, startIdx + boundaryBuffer.length);
+    
+    if (startIdx === -1 || endIdx === -1) {
+      return res.status(400).send('Empty file payload data.');
     }
 
-    const form = new FormData();
-    form.append("size", "auto");
-    form.append("image_file", req.file.buffer, {
-      filename: req.file.originalname || "upload.png",
-      contentType: req.file.mimetype || "image/png",
+    const fileBlock = rawBody.subarray(startIdx, endIdx);
+    const headerEndIdx = fileBlock.indexOf('\r\n\r\n');
+    if (headerEndIdx === -1) return res.status(400).send('Malformed payload data.');
+    
+    // Extract the pure, unpolluted file buffer
+    const pureFileBuffer = fileBlock.subarray(headerEndIdx + 4, fileBlock.length - 2);
+
+    // 3. Re-assemble standard multi-part payload package for remove.bg
+    const apiForm = new FormData();
+    apiForm.append('size', 'auto');
+    apiForm.append('image_file', pureFileBuffer, {
+      filename: 'canvas_source.png',
+      contentType: 'image/png',
     });
 
-    // Uses native built-in global fetch engine to avoid version crashes
-    const response = await fetch("https://remove.bg", {
-      method: "POST",
+    // 4. Dispatch directly to the verified remove.bg REST endpoint
+    const response = await fetch('https://remove.bg', {
+      method: 'POST',
       headers: {
-        "X-Api-Key": process.env.API_KEY,
-        ...form.getHeaders()
+        'X-Api-Key': process.env.API_KEY,
+        ...apiForm.getHeaders(),
       },
-      body: form
+      body: apiForm,
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Remove.bg API Error Response:", errorText);
+      console.error('Remove.bg Failure response:', errorText);
       return res.status(response.status).send(`API Error: ${response.statusText}`);
     }
 
-    // Modern serverless array buffer extraction structure 
+    // 5. Stream transparent image byte matrix right back onto your monitor
     const arrayBuffer = await response.arrayBuffer();
-    const data = Buffer.from(arrayBuffer);
+    const finalBuffer = Buffer.from(arrayBuffer);
 
-    res.set("Content-Type", "image/png");
-    res.send(data);
+    res.setHeader('Content-Type', 'image/png');
+    return res.status(200).send(finalBuffer);
 
   } catch (err) {
-    console.error("Serverless Crash Log:", err.message);
-    res.status(500).send("Server Error: " + err.message);
+    console.error('Crash Event Intercepted:', err.message);
+    return res.status(500).send('Server Processing Error: ' + err.message);
   }
-});
-
-module.exports = app;
+}
