@@ -14,15 +14,17 @@
 <body>
 <section>
 
-  <!-- LEFT -->
+  <!-- LEFT PANEL: FILTERS -->
   <div class="left">
     <h2>Filters</h2>
     <div id="filters"></div>
     <p class="signature">Project By Paawan Garg</p>
   </div>
 
-  <!-- RIGHT -->
+  <!-- RIGHT PANEL: WORKSPACE -->
   <div class="right">
+    
+    <!-- TOP TOOLBAR: ACTIONS -->
     <div class="top">
       <label class="btn">
         Choose File
@@ -30,18 +32,25 @@
       </label>
 
       <button id="remove-bg-btn" class="btn">Remove Background</button>
-
       <button id="reset-image-btn" class="btn">Reset Image</button>
       <button id="crop-btn" class="btn">Crop</button>
       <button id="apply-crop-btn" class="btn">Apply Crop</button>
-      <button id="download-btn" class="btn">Download</button>
 
-      
+      <!-- NEW TRANSFORMATION BUTTONS -->
+      <button id="mirror-h-btn" class="btn">
+        <i class="ri-flip-horizontal-line" style="font-size:14px; position:static; margin-right:4px;"></i> Mirror Horizontal
+      </button>
+      <button id="mirror-v-btn" class="btn">
+        <i class="ri-flip-vertical-line" style="font-size:14px; position:static; margin-right:4px;"></i> Mirror Vertical
+      </button>
+
+      <button id="download-btn" class="btn">Download</button>
     </div>
 
+    <!-- BOTTOM STUDIO: IMAGE CANVAS -->
     <div class="bottom">
       <div class="canvas-container">
-        <img id="image" />
+        <img id="image" alt="Editor Workspace Target" />
 
         <div id="crop-box">
           <div class="resize handle-tl"></div>
@@ -49,12 +58,22 @@
         </div>
       </div>
 
+      <!-- CENTRAL NOTIFICATION DEFAULT VIEWPORT -->
       <i class="ri-image-fill"></i>
       <p class="p">No Chosen Image</p>
     </div>
-  </div>
+
+  </div> <!-- Closed the right division container cleanly here -->
 
 </section>
+
+<!-- INVISIBLE SVG FILTER FOR HIGH-PRECISION SHARPNESS PROCESSING -->
+<svg xmlns="http://w3.org" style="display: none;">
+  <filter id="svg-sharpen">
+    <!-- 3x3 Convolution matrix for real-time edge contrast calculations -->
+    <feConvolveMatrix id="sharpen-matrix" order="3" preserveAlpha="true" kernelMatrix="0 0 0 0 1 0 0 0 0"/>
+  </filter>
+</svg>
 
 <script src="script.js"></script>
 </body>

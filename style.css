@@ -1,3 +1,4 @@
+/* ================= COMPONENT RESETS ================= */
 * {
   margin: 0;
   padding: 0;
@@ -7,26 +8,56 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
 }
 
 section {
   display: flex;
   height: 100vh;
+  width: 100vw;
 }
 
-/* LEFT */
+/* ================= LEFT SIDEBAR PANEL ================= */
 .left {
-  width: 30%;
+  width: 25%;
+  min-width: 280px;
   background: var(--bg-secondary);
   padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(255, 30, 30, 0.15); /* Soft red accent border line */
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.7);
 }
 
-/* FILTERS */
+.left h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: var(--space-lg);
+  letter-spacing: 0.5px;
+  color: var(--text-primary);
+  border-left: 3px solid var(--accent);
+  padding-left: 8px;
+}
+
+/* FILTERS SECTION */
 #filters {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom Scrollbar for Filters List */
+#filters::-webkit-scrollbar {
+  width: 4px;
+}
+#filters::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 2px;
 }
 
 .filter {
@@ -35,136 +66,207 @@ section {
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: var(--transition);
+}
+
+.filter:hover {
+  border-color: rgba(255, 30, 30, 0.3);
+  transform: translateY(-1px);
 }
 
 .filter-top {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: capitalize;
+  color: var(--text-secondary);
 }
 
 .filter-value {
   color: var(--accent);
+  font-family: monospace;
 }
 
-.filter input {
+/* Custom Styled Input Range Sliders */
+.filter input[type="range"] {
   width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+  background: transparent;
 }
 
-/* SIGNATURE */
+/* SIGNATURE BRANDING */
 .signature {
-  margin-top: 25px;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 30, 30, 0.15);
   text-align: center;
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--accent);
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   font-family: 'Orbitron', sans-serif;
-
-  text-shadow:
-    0 0 3px var(--accent),
-    0 0 6px rgba(255, 0, 0, 0.6);
-
-  opacity: 0.95;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 30, 30, 0.4);
 }
 
-/* RIGHT */
+/* ================= RIGHT WORKSPACE INTERFACE ================= */
 .right {
-  width: 70%;
+  width: 75%;
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-lg);
+  background: var(--bg-primary);
 }
 
-/* BUTTONS */
+/* ACTION CONTROLLER TOOLBAR */
 .top {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
+  gap: 12px;
+  justify-content: flex-start;
+  background: var(--bg-secondary);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 30, 30, 0.1);
 }
 
+/* UNIFIED INTERACTIVE BUTTON SYSTEM */
 .btn {
-  padding: 8px 12px;
-  background: var(--accent);
-  border: none;
-  color: white;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
 }
 
-/* IMAGE AREA */
+.btn:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 30, 30, 0.3);
+}
+
+/* Explicit Button Overrides for Critical Actions */
+label.btn {
+  background: rgba(255, 30, 30, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 30, 30, 0.3);
+}
+label.btn:hover {
+  background: var(--accent);
+}
+
+#download-btn {
+  margin-left: auto; /* Forces download button neatly to the right corner */
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+#download-btn:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 12px rgba(255, 30, 30, 0.4);
+}
+
+#reset-image-btn:hover {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+  box-shadow: 0 4px 12px rgba(179, 0, 0, 0.4);
+}
+
+/* ================= CENTRAL STUDIO CANVAS ================= */
 .bottom {
   flex: 1;
-  border: 2px dashed gray;
+  background: var(--bg-secondary);
+  border: 2px dashed rgba(255, 30, 30, 0.2);
+  border-radius: var(--radius-md);
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
+  overflow: hidden;
 }
 
-.canvas-container {
-  position: relative;
-}
-
-img {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-i {
-  font-size: 60px;
-  position: absolute;
-}
-
-.p {
-  position: absolute;
-  top: 60%;
-  color: gray;
-}
-
-/* CROP BOX */
-#crop-box {
-  position: absolute;
-  border: 2px dashed red;
-  display: none;
-  cursor: move;
-}
-
-.resize {
-  width: 10px;
-  height: 10px;
-  background: red;
-  position: absolute;
-}
-
-.handle-tl { top: -5px; left: -5px; cursor: nwse-resize; }
-.handle-tr { top: -5px; right: -5px; cursor: nesw-resize; }
-.handle-bl { bottom: -5px; left: -5px; cursor: nesw-resize; }
-.handle-br { bottom: -5px; right: -5px; cursor: nwse-resize; }
-
-
+/* CANVAS BOUNDING CONTAINER */
 .canvas-container {
   position: relative;
   display: inline-block;
-  max-width: 100%;
+  max-width: 90%;
+  max-height: 85%;
 }
 
 #image {
-  max-width: 100%;
   display: none;
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9);
 }
 
+/* PLACEHOLDER EMPTY UI */
+i.ri-image-fill {
+  font-size: 64px;
+  color: rgba(255, 30, 30, 0.25); /* The default workspace image icon matches red */
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.p {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ================= HIGH-PRECISION CROP OVERLAY ================= */
 #crop-box {
   position: absolute;
-  border: 2px dashed #00f;
+  border: 2px dashed var(--accent);
   display: none;
   cursor: move;
+  box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.75); /* Dark layout mask overlay */
+  z-index: 10;
 }
 
-/* prevent blocking when hidden */
-#crop-box.hidden {
-  display: none;
-  pointer-events: none;
+/* Anchor Control Nodes */
+.resize {
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 2px solid var(--accent);
+  position: absolute;
+  border-radius: 50%;
+}
+
+.handle-tl { top: -6px; left: -6px; cursor: nwse-resize; }
+.handle-br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+/* Mirror state transforms applied dynamically via JavaScript */
+.mirror-horizontal { transform: scaleX(-1); }
+.mirror-vertical { transform: scaleY(-1); }
+.mirror-both { transform: scale(-1, -1); }
+
+/* Force modern browsers to handle sharpening context rendering gracefully */
+#image {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }

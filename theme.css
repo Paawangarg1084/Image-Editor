@@ -8,7 +8,28 @@
   --text-secondary: #aaa;
 
   --space-sm: 8px;
+  --space-md: 1:root {
+  /* Core Matt-Black & Crimson Config */
+  --bg-primary: #000000;
+  --bg-secondary: #0b0c10;
+  --bg-card: #141519;
+  --accent: #ff1e1e;
+  --accent-hover: #cf1414;
+  --danger: #b30000;
+
+  /* Typography Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+
+  /* Layout Metrics & Animations */
+  --space-sm: 8px;
   --space-md: 12px;
+  --space-lg: 20px;
+  --radius-md: 10px;
+  --radius-sm: 4px;
+  --transition: all 0.2s ease-in-out;
+}
+2px;
   --space-lg: 20px;
 
   --radius-md: 10px;
