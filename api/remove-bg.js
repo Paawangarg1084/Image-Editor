@@ -1,17 +1,20 @@
 import FormData from 'form-data';
 
+// CRITICAL FOR VERCEL DEPLOYMENTS: Stops Vercel from corrupting binary image data streams
+export const config = {
+  api: {
+    bodyParser: false, 
+  },
+};
+
 export default async function handler(req, res) {
+  // Safe CORS Headers for Production
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).send('Method Not Allowed');
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
 
   try {
     const buffers = [];
@@ -20,24 +23,20 @@ export default async function handler(req, res) {
     }
     const rawBody = Buffer.concat(buffers);
 
-    const contentType = req.headers['content-type'] || req.headers['Content-Type'];
+    const contentType = req.headers['content-type'] || req.headers['Content-Type'] || '';
     const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/i);
-    if (!boundaryMatch) {
-      return res.status(400).send('Invalid multipart request.');
-    }
+    if (!boundaryMatch) return res.status(400).send('Invalid multipart request.');
+    
     const boundary = boundaryMatch[1] || boundaryMatch[2];
-
     const boundaryBuffer = Buffer.from(`--${boundary}`);
     const startIdx = rawBody.indexOf(boundaryBuffer);
     const endIdx = rawBody.indexOf(boundaryBuffer, startIdx + boundaryBuffer.length);
     
-    if (startIdx === -1 || endIdx === -1) {
-      return res.status(400).send('Empty file payload data.');
-    }
+    if (startIdx === -1 || endIdx === -1) return res.status(400).send('Empty payload data.');
 
     const fileBlock = rawBody.subarray(startIdx, endIdx);
-    const headerEndIdx = fileBlock.indexOf('\r\n\r\n');
-    if (headerEndIdx === -1) return res.status(400).send('Malformed payload data.');
+    const headerEndIdx = fileBlock.indexOf(Buffer.from('\r\n\r\n'));
+    if (headerEndIdx === -1) return res.status(400).send('Malformed data structure.');
     
     const pureFileBuffer = fileBlock.subarray(headerEndIdx + 4, fileBlock.length - 2);
 
@@ -48,11 +47,11 @@ export default async function handler(req, res) {
       contentType: 'image/png',
     });
 
-    // FIXED API URL: Pointing to the real remove.bg processing engine route
+    // CORRECT API URL
     const response = await fetch('https://remove.bg', {
       method: 'POST',
       headers: {
-        'X-Api-Key': process.env.API_KEY,
+        'X-Api-Key': 'dg2rU4Qv6EZfLehqU6WB6XVr', // Your active key
         ...apiForm.getHeaders(),
       },
       body: apiForm,
@@ -60,18 +59,14 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Remove.bg Failure response:', errorText);
-      return res.status(response.status).send(`API Error: ${response.statusText}`);
+      return res.status(response.status).send(`API Error: ${errorText}`);
     }
 
     const arrayBuffer = await response.arrayBuffer();
-    const finalBuffer = Buffer.from(arrayBuffer);
-
     res.setHeader('Content-Type', 'image/png');
-    return res.status(200).send(finalBuffer);
+    return res.status(200).send(Buffer.from(arrayBuffer));
 
   } catch (err) {
-    console.error('Crash Event Intercepted:', err.message);
-    return res.status(500).send('Server Processing Error: ' + err.message);
+    return res.status(500).send('Server Error: ' + err.message);
   }
 }

@@ -195,7 +195,6 @@ fileInput.addEventListener("change", function () {
   fileInput.value = "";
 });
 
-// ================= BACKEND LINK: REMOVE BACKGROUND =================
 // ================= REMOVE BACKGROUND CONNECTOR =================
 removeBgBtn.onclick = async () => {
   if (!currentImage) return alert("Please upload an image first!");
@@ -209,9 +208,9 @@ removeBgBtn.onclick = async () => {
     const blob = await responseBlob.blob();
 
     const formData = new FormData();
-    formData.append("image", blob, "canvas_source.png");
+    // MATCHED KEY: Must be 'image_file' to align with backend parser
+    formData.append("image_file", blob, "canvas_source.png");
 
-    // FIX 1: Ensure this points to Vercel's Serverless API path, NOT localhost!
     const backendResponse = await fetch("/api/remove-bg", {
       method: "POST",
       body: formData,
@@ -237,7 +236,6 @@ removeBgBtn.onclick = async () => {
 
   } catch (err) {
     console.error(err);
-    // FIX 2: Removed the hardcoded port 3000 text so we can read what Vercel is actually saying!
     alert("Background Removal Failed: " + err.message);
   } finally {
     removeBgBtn.innerText = originalText;
