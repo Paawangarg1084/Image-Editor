@@ -195,7 +195,7 @@ fileInput.addEventListener("change", function () {
   fileInput.value = "";
 });
 
-// ================= REMOVE BACKGROUND CONNECTOR =================
+// ================= REMOVE BACKGROUND (DIRECT VERSION) =================
 removeBgBtn.onclick = async () => {
   if (!currentImage) return alert("Please upload an image first!");
 
@@ -204,25 +204,31 @@ removeBgBtn.onclick = async () => {
   removeBgBtn.disabled = true;
 
   try {
+    // 1. Fetch your current canvas image and turn it into a binary blob
     const responseBlob = await fetch(currentImage);
     const blob = await responseBlob.blob();
 
+    // 2. Pack it into a standard browser FormData object
     const formData = new FormData();
-    // MATCHED KEY: Must be 'image_file' to align with backend parser
+    formData.append("size", "auto");
     formData.append("image_file", blob, "canvas_source.png");
 
-    const backendResponse = await fetch("/api/remove-bg", {
+    // 3. Connect directly to the correct Remove.bg API engine URL
+    const response = await fetch("https://remove.bg", {
       method: "POST",
-      body: formData,
+      headers: {
+        "X-Api-Key": "dg2rU4Qv6EZfLehqU6WB6XVr", // Your active API Key
+      },
+      body: formData, // The browser calculates headers and boundaries automatically
     });
 
-    if (!backendResponse.ok) {
-      const errorText = await backendResponse.text();
-      throw new Error(errorText || "Backend API failure.");
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "API processing failure.");
     }
 
-    const transparentBlob = await backendResponse.blob();
-    
+    // 4. Convert the incoming transparent PNG stream back to a workspace URL
+    const transparentBlob = await response.blob();
     const base64Reader = new FileReader();
     base64Reader.readAsDataURL(transparentBlob);
     base64Reader.onloadend = function () {
@@ -234,6 +240,8 @@ removeBgBtn.onclick = async () => {
       };
     };
 
+    alert("Background successfully removed!");
+
   } catch (err) {
     console.error(err);
     alert("Background Removal Failed: " + err.message);
@@ -242,7 +250,6 @@ removeBgBtn.onclick = async () => {
     removeBgBtn.disabled = false;
   }
 };
-
 
 // ================= FIXED RESET IMAGE (WITH ACCIDENTAL CLICK CONFIRMATION) =================
 resetImageBtn.onclick = (event) => {
