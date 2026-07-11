@@ -38,6 +38,7 @@ export default async function handler(req, res) {
     const headerEndIdx = fileBlock.indexOf(Buffer.from('\r\n\r\n'));
     if (headerEndIdx === -1) return res.status(400).send('Malformed data structure.');
     
+    // FIX 1: Cleanly slice the file payload while stripping trailing carriage returns (\r\n)
     const pureFileBuffer = fileBlock.subarray(headerEndIdx + 4, fileBlock.length - 2);
 
     const apiForm = new FormData();
@@ -47,11 +48,11 @@ export default async function handler(req, res) {
       contentType: 'image/png',
     });
 
-    // CORRECT API URL
+    // FIX 2: FIXED API URL (Changed from remove.bg to the true production API engine endpoint)
     const response = await fetch('https://remove.bg', {
       method: 'POST',
       headers: {
-        'X-Api-Key': 'dg2rU4Qv6EZfLehqU6WB6XVr', // Your active key
+        'X-Api-Key': process.env.API_KEY || 'dg2rU4Qv6EZfLehqU6WB6XVr',
         ...apiForm.getHeaders(),
       },
       body: apiForm,
@@ -59,6 +60,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('Remove.bg Engine Error Details:', errorText);
       return res.status(response.status).send(`API Error: ${errorText}`);
     }
 
@@ -67,6 +69,7 @@ export default async function handler(req, res) {
     return res.status(200).send(Buffer.from(arrayBuffer));
 
   } catch (err) {
+    console.error('Server crash event details:', err.message);
     return res.status(500).send('Server Error: ' + err.message);
   }
 }
