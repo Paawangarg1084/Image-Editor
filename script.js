@@ -251,6 +251,8 @@ fileInput.addEventListener("change", function () {
 //   }
 // };
 
+
+
 // ================= FIXED RESET IMAGE (WITH ACCIDENTAL CLICK CONFIRMATION) =================
 resetImageBtn.onclick = (event) => {
   if (!originalImage) return;
